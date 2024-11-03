@@ -6,7 +6,7 @@ USERNAME=$2
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 NGINX_CONF_LINK="/etc/nginx/sites-enabled/$DOMAIN"
 
-sudo bash -c "cat <<EOL > '$NGINX_CONF'
+sudo bash -c "cat > '$NGINX_CONF' << 'EOL'
 server {
     listen 80;
     server_name $DOMAIN;
@@ -25,5 +25,3 @@ sudo chmod 644 "$NGINX_CONF"
 
 sudo ln -s "$NGINX_CONF" "$NGINX_CONF_LINK"
 sudo nginx -t && sudo systemctl reload nginx
-
-sudo certbot --nginx -d "$DOMAIN"
