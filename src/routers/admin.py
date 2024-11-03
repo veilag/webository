@@ -96,5 +96,6 @@ async def handle_approve_request(query: CallbackQuery, callback_data: RequestApp
         return
 
     await process_message.edit_text(
-        f"✅ *Пользователь создан и настроен*\n\n*Логин*: {request.username}\n*Пароль*: {user_password}"
+        f"✅ <b>Пользователь создан и настроен</b>\n\n<b>Логин</b>: {request.username}\n<b>Пароль</b>: {user_password}",
+        parse_mode="HTML"
     )
