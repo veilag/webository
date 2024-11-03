@@ -26,4 +26,6 @@ sudo chmod 644 "$NGINX_CONF"
 sudo ln -s "$NGINX_CONF" "$NGINX_CONF_LINK"
 sudo nginx -t && sudo systemctl reload nginx
 
+sleep 5
+
 sudo certbot --nginx -d "$DOMAIN"
