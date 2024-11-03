@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from .base import Base
+from .models import Request
 
 
 def setup_database():
@@ -6,3 +8,9 @@ def setup_database():
     sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
 
     return engine, sessionmaker
+
+
+__all__ = [
+    "Base",
+    "Request"
+]
