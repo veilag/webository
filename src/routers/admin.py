@@ -14,6 +14,32 @@ router = Router()
 pwo = PasswordGenerator()
 
 
+def add_subdomain(request):
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getenv('TIMEWEB_TOKEN'),
+    }
+
+    response = requests.post(
+        f'https://api.timeweb.cloud/api/v1/domains/webository.ru/subdomains/{request.subdomain}',
+        headers=headers,
+    )
+
+    print(response.json())
+
+    json_data = {
+        'type': 'A',
+        'value': '213.171.12.197',
+    }
+
+    response = requests.post(
+        f'https://api.timeweb.cloud/api/v1/domains/{request.subdomain}.webository.ru/dns-records', headers=headers,
+        json=json_data
+    )
+
+    print(response.json())
+
+
 @router.callback_query(RequestApproveCallback.filter(F.approve))
 async def handle_approve_request(query: CallbackQuery, callback_data: RequestApproveCallback, session: AsyncSession, bot: Bot):
     request = await get_request_by_id(
@@ -37,7 +63,10 @@ async def handle_approve_request(query: CallbackQuery, callback_data: RequestApp
         await query.message.answer(f"Ошибка при создании пользователя tg_username={request.telegram_username}.\n\n*stdout*\n{stdout}\n\nstderr\n{stderr}")
         return
 
-    await process_message.edit_text("🔄 Создаю конфигурацию NGINX")
+    await process_message.edit_text("🔄 Настраиваю поддомен")
+    add_subdomain(request)
+
+    await process_message.edit_text("🔄 Создаю конфигурацию NGINX и получаю сертификат")
 
     nginx_setup_process = subprocess.Popen([
         './scripts/nginx_setup.sh',
@@ -69,27 +98,3 @@ async def handle_approve_request(query: CallbackQuery, callback_data: RequestApp
     await process_message.edit_text(
         f"✅ *Пользователь создан и настроен*\n\n*Логин*: {request.username}\n*Пароль*: {user_password}"
     )
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getenv('TIMEWEB_TOKEN'),
-    }
-
-    response = requests.post(
-        f'https://api.timeweb.cloud/api/v1/domains/webository.ru/subdomains/{request.subdomain}',
-        headers=headers,
-    )
-
-    print(response.json())
-
-    json_data = {
-        'type': 'A',
-        'value': '213.171.12.197',
-    }
-
-    response = requests.post(
-        f'https://api.timeweb.cloud/api/v1/domains/{request.subdomain}.webository.ru/dns-records', headers=headers,
-        json=json_data
-    )
-
-    print(response.json())
