@@ -16,14 +16,18 @@ router = Router()
 @router.message(CommandStart())
 async def handle_start_message(message: Message, state: FSMContext) -> None:
     await state.set_state(RequestForm.username)
-    await message.answer("Введите имя пользователя для будущего аккаунта на сервере на латинице")
+    await message.answer(
+        "Здесь ты сможешь подать заявку на создание выделенного аккаунта на удаленной linux-машине\nПри одобрении заявки будет создан аккаунт на который можно будет подключиться через ssh\n\n———\nНапиши имя пользователя на латинице для твоего будущего аккаунта на сервере👇"
+    )
 
 
 @router.message(RequestForm.username)
 async def handle_username(message: Message, state: FSMContext) -> None:
     await state.update_data(username=message.text)
     await state.set_state(RequestForm.subdomain)
-    await message.answer("Введите название поддомена на латинице")
+    await message.answer(
+        "webository.ru – основной домен, который ведет на сервер.\nУ тебя будет свой поддомен, это то, что идет спереди домена, к примеру play.webository.ru\n\n———\nНапиши название своего поддомена, оно должно быть на латинице👇"
+    )
 
 
 @router.message(RequestForm.subdomain)
@@ -47,11 +51,15 @@ async def handle_subdomain(message: Message, state: FSMContext, bot: Bot, sessio
         text="Одобрить",
         callback_data=RequestApproveCallback(request_id=new_request.id, approve=True).pack()
     ))
+    keyboard.row(InlineKeyboardButton(
+        text="Отклонить",
+        callback_data=RequestApproveCallback(request_id=new_request.id, approve=False).pack()
+    ))
 
     await notify_admins(
         bot=bot,
         builder=keyboard,
-        message=f"📝 Новая заявка. username={data.get('username')} subdomain={data.get('subdomain')}"
+        message=f"📝 Новая заявка\n\nusername: {data.get('username')} subdomain: {data.get('subdomain')}"
     )
 
-    await message.answer("✅ Заявка отправлена")
+    await message.answer("Заявка отправлена")

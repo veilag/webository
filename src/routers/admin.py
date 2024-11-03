@@ -47,55 +47,46 @@ async def handle_approve_request(query: CallbackQuery, callback_data: RequestApp
         id=callback_data.request_id
     )
 
-    await bot.send_message(chat_id=request.telegram_id, text="✅ Ваша заявка одобрена")
+    await bot.send_message(chat_id=request.telegram_id, text="✅ Ваша заявка одобрена. Начинаю настройку вашего аккаунта")
     process_message = await bot.send_message(chat_id=request.telegram_id, text="🔄 Создаю пользователя")
 
     user_password = pwo.generate()
-    user_setup_process = subprocess.Popen([
+    subprocess.Popen([
         './scripts/user_setup.sh',
         request.username, user_password
     ])
 
-    stdout, stderr = user_setup_process.communicate()
-
-    if user_setup_process.returncode != 0:
-        await process_message.edit_text("❌ Ошибка при создании пользователя. Логи отправлены училке")
-        await query.message.answer(f"Ошибка при создании пользователя tg_username={request.telegram_username}.\n\n*stdout*\n{stdout}\n\nstderr\n{stderr}")
-        return
-
     await process_message.edit_text("🔄 Настраиваю поддомен")
     add_subdomain(request)
 
-    await process_message.edit_text("🔄 Создаю конфигурацию NGINX и получаю сертификат")
+    await process_message.edit_text("🔄 Создаю конфигурацию nginx и получаю сертификат")
 
-    nginx_setup_process = subprocess.Popen([
+    subprocess.Popen([
         './scripts/nginx_setup.sh',
         f'{request.subdomain}.webository.ru', request.username
     ])
 
-    stdout, stderr = nginx_setup_process.communicate()
+    await process_message.edit_text("🔄 Создаю конфигурацию gunicorn")
 
-    if user_setup_process.returncode != 0:
-        await process_message.edit_text("❌ Ошибка при конфигурации NGINX. Логи отправлены училке")
-        await query.message.answer(f"Ошибка при NGINX tg_username={request.telegram_username}.\n\n*stdout*\n{stdout}\n\nstderr\n{stderr}")
-        return
-
-    await process_message.edit_text("🔄 Создаю конфигурацию GUNICORN")
-
-    gunicorn_setup_process = subprocess.Popen([
+    subprocess.Popen([
         './scripts/gunicorn_setup.sh',
         request.username
     ])
 
-    stdout, stderr = gunicorn_setup_process.communicate()
-
-    if user_setup_process.returncode != 0:
-        await process_message.edit_text("❌ Ошибка при конфигурации GUNICORN. Логи отправлены училке")
-        await query.message.answer(
-            f"Ошибка при GUNICORN tg_username={request.telegram_username}.\n\n*stdout*\n{stdout}\n\nstderr\n{stderr}")
-        return
-
     await process_message.edit_text(
-        f"✅ <b>Пользователь создан и настроен</b>\n\n<b>Логин</b>: {request.username}\n<b>Пароль</b>: {user_password}",
+        f"""✅ Пользователь успешно создан и настроен
+
+Твои данные для входа 👉
+Логин: {request.username}
+Пароль: <span class="tg-spoiler">{user_password}</span>
+
+———
+Для того, чтобы подключится к серверу нужен ssh клиент, он уже есть, если ты работаешь с линукса, тогда используй команду
+
+<pre language="bash">
+ssh user@webository.ru
+</pre>
+где user — твой логин
+""",
         parse_mode="HTML"
     )
