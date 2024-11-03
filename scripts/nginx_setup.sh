@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DOMAIN=$1
+USERNAME=$2
 
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 NGINX_CONF_LINK="/etc/nginx/sites-enabled/$DOMAIN"

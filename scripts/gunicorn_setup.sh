@@ -1,5 +1,7 @@
 #!/bin/bash
 
+USERNAME=$1
+
 GUNICORN_SERVICE="/etc/systemd/system/gunicorn-$USERNAME.service"
 
 sudo bash -c "cat <<EOL > '$GUNICORN_SERVICE'

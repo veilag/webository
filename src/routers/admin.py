@@ -39,7 +39,7 @@ async def handle_approve_request(query: CallbackQuery, callback_data: RequestApp
 
     nginx_setup_process = subprocess.Popen([
         './scripts/nginx_setup.sh',
-        f'{request.subdomain}.webository.ru'
+        f'{request.subdomain}.webository.ru', request.username
     ])
 
     stdout, stderr = nginx_setup_process.communicate()
